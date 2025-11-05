@@ -1,23 +1,14 @@
 import os
-from datetime import timedelta
+from dotenv import load_dotenv
+load_dotenv()
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///app.db'
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret"
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or "sqlite:///dev.sqlite3"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
-    
-class DevelopmentConfig(Config):
-    DEBUG = True
-    TESTING = False
-
-class ProductionConfig(Config):
-    DEBUG = False
-    TESTING = False
-
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'default': DevelopmentConfig
-}
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = False  # set True in production with https
+    # To share session across subdomains set like ".company.com"
+    SESSION_COOKIE_DOMAIN = os.environ.get("SESSION_COOKIE_DOMAIN")
+    SERVER_NAME = os.environ.get("SERVER_NAME")  # optional for subdomain handling in Flask

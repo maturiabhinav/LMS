@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Create Employee{% endblock %}
+{% block content %}
+  <h2>Create Employee / Admin</h2>
+  <form method="post">
+    <label>Full name</label><br>
+    <input name="full_name" required /><br>
+    <label>Email</label><br>
+    <input name="email" type="email" required /><br>
+    <label>Role</label><br>
+    <select name="role">
+      <option value="EMPLOYEE">Employee</option>
+      <option value="CLIENT_ADMIN">Admin</option>
+    </select><br><br>
+    <button type="submit">Create</button>
+  </form>
+{% endblock %}

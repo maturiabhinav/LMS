@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Tenant Dashboard{% endblock %}
+{% block content %}
+  <h2>Tenant Dashboard — {{ tenant.name }}</h2>
+  <p>Subdomain: {{ tenant.subdomain }}</p>
+
+  <h3>Admins</h3>
+  <ul>
+    {% for a in admins %}
+      <li>{{ a.full_name }} ({{ a.email }})</li>
+    {% else %}
+      <li>No admins yet</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Employees</h3>
+  <ul>
+    {% for e in employees %}
+      <li>{{ e.full_name }} ({{ e.email }})</li>
+    {% else %}
+      <li>No employees yet</li>
+    {% endfor %}
+  </ul>
+
+  <p><a href="{{ url_for('tenant.create_employee') }}">Create employee/admin</a></p>
+{% endblock %}

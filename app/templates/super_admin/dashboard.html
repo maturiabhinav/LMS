@@ -1,0 +1,7 @@
+<h1>Super Admin Dashboard</h1>
+<a href="{{ url_for('super_admin.create_client') }}">Create New Client</a>
+<ul>
+  {% for client in clients %}
+  <li>{{ client.name }} — {{ client.domain }}</li>
+  {% endfor %}
+</ul>

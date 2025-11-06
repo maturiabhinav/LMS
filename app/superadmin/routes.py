@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, g
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app
 from flask_login import login_required, current_user
 from ..extensions import db
 from ..models import Tenant, User, RoleEnum
@@ -8,21 +8,20 @@ superadmin_bp = Blueprint("superadmin", __name__, template_folder="templates", s
 
 def require_superadmin(fn):
     from functools import wraps
-    from flask import abort
     @wraps(fn)
-    def wrapper(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role.name != "SUPER_ADMIN":
-            return abort(403)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != RoleEnum.SUPER_ADMIN:
+            abort(403)
         return fn(*args, **kwargs)
-    return wrapper
+    return wrapped
 
-@superadmin_bp.route("/")
+@superadmin_bp.route("/admin")
 @login_required
 @require_superadmin
 def index():
     return render_template("superadmin/index.html")
 
-@superadmin_bp.route("/clients", methods=["GET", "POST"])
+@superadmin_bp.route("/admin/clients", methods=["GET", "POST"])
 @login_required
 @require_superadmin
 def clients():
@@ -30,19 +29,22 @@ def clients():
         name = request.form.get("name")
         subdomain = request.form.get("subdomain") or slugify(name)
         slug = slugify(name)
-        # ensure unique subdomain
+        # ensure unique
         if Tenant.query.filter_by(subdomain=subdomain).first():
             flash("Subdomain already exists", "danger")
             return redirect(url_for("superadmin.clients"))
-        t = Tenant(name=name, subdomain=subdomain, slug=slug, created_by=current_user.id)
-        db.session.add(t)
+
+        tenant = Tenant(name=name, subdomain=subdomain, slug=slug, created_by=current_user.id)
+        db.session.add(tenant)
         db.session.commit()
-        flash("Client created", "success")
+        flash("Client created: " + subdomain, "success")
         return redirect(url_for("superadmin.clients"))
+
     tenants = Tenant.query.order_by(Tenant.created_at.desc()).all()
     return render_template("superadmin/clients.html", tenants=tenants)
 
-@superadmin_bp.route("/clients/<int:tenant_id>/users")
+
+@superadmin_bp.route("/admin/clients/<int:tenant_id>/users")
 @login_required
 @require_superadmin
 def client_users(tenant_id):

@@ -1,1 +1,1 @@
-web: gunicorn wsgi:app --threads 2 --workers 2 -b 0.0.0.0:$PORT
+web: gunicorn application:create_app() --workers 2 --threads 2 -b 0.0.0.0:$PORT

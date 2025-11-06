@@ -20,103 +20,42 @@
       height: 100vh;
       margin: 0;
     }
-
-    .logo {
-      width: 160px;
-      margin-bottom: 10px;
-    }
-
+    .logo { width: 160px; margin-bottom: 10px; }
     .brand-name {
-      font-size: 30px;
-      font-weight: 700;
-      color: #133b6b;
-      margin-bottom: 40px;
-      text-align: center;
-      letter-spacing: 0.5px;
+      font-size: 30px; font-weight: 700; color: #133b6b;
+      margin-bottom: 40px; text-align: center; letter-spacing: 0.5px;
     }
-
-    .login-container {
-      width: 100%;
-      max-width: 400px;
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 13px;
-      color: #1a1a1a;
-      letter-spacing: 0.5px;
-    }
-
+    .login-container { width: 100%; max-width: 400px; text-align: left; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #1a1a1a; letter-spacing: 0.5px; }
     input {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      background-color: #f7f7f7;
-      border-radius: 3px;
-      font-size: 14px;
-      outline: none;
+      width: 100%; padding: 14px; margin-bottom: 20px;
+      border: 1px solid #ccc; background-color: #f7f7f7;
+      border-radius: 3px; font-size: 14px; outline: none;
     }
-
-    input:focus {
-      border-color: #1f4f8f;
-    }
-
-    .forgot {
-      text-align: right;
-      margin-top: -10px;
-      margin-bottom: 20px;
-    }
-
-    .forgot a {
-      color: #1f73c9;
-      text-decoration: none;
-      font-size: 13px;
-    }
-
-    .forgot a:hover {
-      text-decoration: underline;
-    }
-
+    input:focus { border-color: #1f4f8f; }
+    .forgot { text-align: right; margin-top: -10px; margin-bottom: 20px; }
+    .forgot a { color: #1f73c9; text-decoration: none; font-size: 13px; }
+    .forgot a:hover { text-decoration: underline; }
     button {
-      width: 100%;
-      background-color: #214E88;
-      color: white;
-      padding: 14px;
-      font-weight: 600;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 15px;
-      text-transform: uppercase;
+      width: 100%; background-color: #214E88; color: white;
+      padding: 14px; font-weight: 600; border: none; border-radius: 3px;
+      cursor: pointer; font-size: 15px; text-transform: uppercase;
     }
-
-    button:hover {
-      background-color: #1a3d6e;
-    }
-
-    @media (max-width: 480px) {
-      .login-container {
-        width: 90%;
-      }
-    }
+    button:hover { background-color: #1a3d6e; }
+    @media (max-width: 480px) { .login-container { width: 90%; } }
   </style>
 </head>
 <body>
-  <!-- Replace src with your uploaded FutureInvo logo -->
-  <img src="../assets/images/FIS_Logo.png" alt="FutureInvo Solutions Logo" class="logo" />
+  <img src="{{ url_for('static', filename='assets/images/FIS_Logo.png') }}" alt="FutureInvo Solutions Logo" class="logo" />
   <div class="brand-name">FutureInvo Solutions</div>
 
   <div class="login-container">
-    <form>
+    <form method="POST" action="{{ url_for('auth.login') }}">
       <label for="email">EMAIL ADDRESS</label>
-      <input type="text" id="email" placeholder="Enter your email" required>
+      <input type="text" name="email" id="email" placeholder="Enter your email" required>
 
       <label for="password">PASSWORD</label>
-      <input type="password" id="password" placeholder="Enter your password" required>
+      <input type="password" name="password" id="password" placeholder="Enter your password" required>
 
       <div class="forgot">
         <a href="#">Forgot Password ?</a>
@@ -124,6 +63,17 @@
 
       <button type="submit">Login</button>
     </form>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <p style="color: {% if category == 'success' %}green{% else %}red{% endif %};">
+            {{ message }}
+          </p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
   </div>
 </body>
 </html>

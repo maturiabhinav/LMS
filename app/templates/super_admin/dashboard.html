@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FutureInvo Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
-
-  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
-
 <body>
 
-  
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="logo">
-      <img src="../assets/images/fis_icon.png" alt="logo" />
+      <img src="{{ url_for('static', filename='assets/images/fis_icon.png') }}" alt="logo" />
       <span>FutureInvo Solutions</span>
     </div>
 
@@ -38,12 +35,13 @@
   <div class="main">
     <div class="navbar">
       <i class="ri-menu-line menu-toggle" id="menuToggle"></i>
-
       <div class="actions">
         <div class="action-box" id="themeToggle"><i class="ri-sun-line"></i></div>
         <div class="action-box"><i class="ri-notification-3-line"></i></div>
         <div class="action-box"><i class="ri-user-line"></i></div>
-        <button class="logout-btn" id="logoutBtn">Logout</button>
+        <a href="{{ url_for('auth.logout') }}">
+          <button class="logout-btn" id="logoutBtn">Logout</button>
+        </a>
 
         <div class="search-bar">
           <i class="ri-search-line"></i>
@@ -53,12 +51,12 @@
     </div>
 
     <div class="content">
-      <h2>Welcome to FutureInvo Dashboard</h2>
+      <h2>Welcome, {{ current_user.email }}</h2>
       <p>Select a module from the sidebar to get started.</p>
     </div>
   </div>
 
-   <!-- Linking JS file -->
-  <script src="../js/dashboard.js"></script>
+  <!-- JS -->
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

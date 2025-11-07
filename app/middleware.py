@@ -28,3 +28,4 @@ def load_tenant():
         tenant = Tenant.query.filter_by(subdomain=subdomain).first()
         if tenant:
             g.tenant = tenant
+

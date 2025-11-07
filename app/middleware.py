@@ -10,18 +10,21 @@ def load_tenant():
     g.tenant = None
     host = request.host.split(':')[0]  # remove port
     base = current_app.config.get("BASE_DOMAIN")
-    if not base:
+    
+    # If no BASE_DOMAIN configured or we're on Render's default domain, use path-based
+    if not base or ".onrender.com" in host:
+        # For Render deployment, we'll use path-based tenancy initially
+        # You can configure custom domains later
         return
-    # If host equals base (xyz.com) -> superadmin root
-    if host == base or host.endswith("." + base) is False:
-        # host could be xyz.com or some other host (e.g. onrender.com) — attempt fallback:
-        # If running on a platform default domain (e.g. xyz.onrender.com) we will support path fallback elsewhere.
+    
+    # For custom domain setup
+    if host == base:
+        # Root domain - super admin
         return
-
-    # For a host like abc.xyz.com, take first label
-    parts = host.split('.')
-    if len(parts) >= 3:
-        subdomain = parts[0]
+        
+    if host.endswith("." + base):
+        # Subdomain like client1.ourcompany.com
+        subdomain = host.replace("." + base, "").split('.')[-1]
         tenant = Tenant.query.filter_by(subdomain=subdomain).first()
         if tenant:
             g.tenant = tenant

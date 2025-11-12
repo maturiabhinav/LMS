@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from config import Config
 from .extensions import db, migrate, login_manager
 from .middleware import load_tenant
@@ -20,6 +20,11 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(superadmin_bp, url_prefix="")
     app.register_blueprint(admin_bp, url_prefix="")
+
+    # Add root route redirect
+    @app.route('/')
+    def home():
+        return redirect(url_for('auth.login'))
 
     # Tenant loader before each request
     app.before_request(load_tenant)

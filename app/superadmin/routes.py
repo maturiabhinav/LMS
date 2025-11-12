@@ -22,7 +22,7 @@ def index():
     total_clients = Tenant.query.count()
     total_admins = User.query.filter_by(role=RoleEnum.CLIENT_ADMIN).count()
     total_students = Student.query.count()
-    return render_template("superadmin/index.html", 
+    return render_template("super_admin/index.html", 
                          total_clients=total_clients,
                          total_admins=total_admins,
                          total_students=total_students)
@@ -48,7 +48,7 @@ def clients():
         return redirect(url_for("superadmin.clients"))
 
     tenants = Tenant.query.order_by(Tenant.created_at.desc()).all()
-    return render_template("superadmin/clients.html", tenants=tenants)
+    return render_template("super_admin/clients.html", tenants=tenants)  # FIXED: super_admin
 
 @superadmin_bp.route("/admin/clients/<int:tenant_id>")
 @login_required
@@ -57,7 +57,7 @@ def client_detail(tenant_id):
     tenant = Tenant.query.get_or_404(tenant_id)
     admins = User.query.filter_by(tenant_id=tenant.id, role=RoleEnum.CLIENT_ADMIN).all()
     students = Student.query.filter_by(tenant_id=tenant.id).all()
-    return render_template("superadmin/client_detail.html", 
+    return render_template("super_admin/client_detail.html",  # FIXED: super_admin
                          tenant=tenant, 
                          admins=admins, 
                          students=students)
@@ -88,4 +88,4 @@ def create_client_admin(tenant_id):
         flash(f"Admin '{full_name}' created successfully for {tenant.name}", "success")
         return redirect(url_for("superadmin.client_detail", tenant_id=tenant_id))
         
-    return render_template("superadmin/create_admin.html", tenant=tenant)
+    return render_template("super_admin/create_admin.html", tenant=tenant) 

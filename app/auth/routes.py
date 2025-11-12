@@ -6,6 +6,12 @@ from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static")
 
+
+# Home route redirects to login
+@auth_bp.route("/")
+def home():
+    return redirect(url_for("auth.login"))
+
 @auth_bp.route("/auth/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":

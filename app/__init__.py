@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, jsonify
 from config import Config
 from .extensions import db, migrate, login_manager
 from .middleware import load_tenant
@@ -25,6 +25,11 @@ def create_app():
     @app.route('/')
     def home():
         return redirect(url_for('auth.login'))
+
+    # Add a test route to verify the app is working
+    @app.route('/test')
+    def test():
+        return jsonify({"status": "success", "message": "App is working!"})
 
     # Tenant loader before each request
     app.before_request(load_tenant)

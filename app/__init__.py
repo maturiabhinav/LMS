@@ -4,7 +4,7 @@ from .extensions import db, migrate, login_manager
 from .middleware import load_tenant
 from .auth.routes import auth_bp
 from .superadmin.routes import superadmin_bp
-from .tenant.routes import tenant_bp
+from .admin.routes import admin_bp
 
 def create_app():
     app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
@@ -19,7 +19,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(superadmin_bp, url_prefix="")
-    app.register_blueprint(tenant_bp, url_prefix="")
+    app.register_blueprint(admin_bp, url_prefix="")
 
     # Tenant loader before each request
     app.before_request(load_tenant)

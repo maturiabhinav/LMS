@@ -12,7 +12,7 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # If tenant context, restrict search to tenant users (client admins / employees).
+        # If tenant context, restrict search to tenant users (client admins / students)
         if getattr(g, "tenant", None):
             user = User.query.filter_by(email=email, tenant_id=g.tenant.id).first()
         else:
@@ -24,13 +24,13 @@ def login():
             return redirect(url_for("auth.login"))
 
         login_user(user)
-        flash("Logged in", "success")
+        flash("Logged in successfully", "success")
 
         # redirect depending on role
         if user.role == RoleEnum.SUPER_ADMIN:
             return redirect(url_for("superadmin.index"))
         else:
-            return redirect(url_for("tenant.dashboard"))
+            return redirect(url_for("admin.dashboard"))
 
     return render_template("auth/login.html")
 
@@ -39,10 +39,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Logged out", "info")
-    # If tenant context, go to tenant login; else go to root login
-    if getattr(g, "tenant", None):
-        return redirect(url_for("auth.login"))
+    flash("Logged out successfully", "info")
     return redirect(url_for("auth.login"))
 
 

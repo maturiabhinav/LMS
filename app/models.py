@@ -7,7 +7,7 @@ from flask_login import UserMixin
 class RoleEnum(enum.Enum):
     SUPER_ADMIN = "SUPER_ADMIN"
     CLIENT_ADMIN = "CLIENT_ADMIN"
-    EMPLOYEE = "EMPLOYEE"
+    STUDENT = "STUDENT"
 
 class Tenant(db.Model):
     __tablename__ = "tenants"
@@ -40,3 +40,16 @@ class User(UserMixin, db.Model):
 
     def get_role(self):
         return self.role.value
+
+class Student(db.Model):
+    __tablename__ = "students"
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.String(50), unique=True, nullable=False)
+    full_name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255))
+    phone = db.Column(db.String(20))
+    course_enrolled = db.Column(db.String(255))
+    enrollment_date = db.Column(db.DateTime, default=datetime.utcnow)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("tenants.id"), nullable=False)
+    
+    tenant = db.relationship("Tenant")

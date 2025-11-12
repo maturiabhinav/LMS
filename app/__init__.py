@@ -1,4 +1,5 @@
 from flask import Flask, redirect, url_for, jsonify
+import os
 from config import Config
 from .extensions import db, migrate, login_manager
 from .middleware import load_tenant
@@ -7,7 +8,13 @@ from .superadmin.routes import superadmin_bp
 from .admin.routes import admin_bp
 
 def create_app():
-    app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
+    # Get the base directory of the project
+    base_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    
+    app = Flask(__name__, 
+                template_folder=os.path.join(base_dir, 'app', 'templates'), 
+                static_folder=os.path.join(base_dir, 'app', 'static'))
+    
     app.config.from_object(Config)
 
     # Initialize extensions
@@ -21,7 +28,22 @@ def create_app():
     app.register_blueprint(superadmin_bp, url_prefix="")
     app.register_blueprint(admin_bp, url_prefix="")
 
-    # Add debug route
+    # Add debug route to check template paths
+    @app.route('/debug-templates')
+    def debug_templates():
+        paths = {
+            "current_directory": os.getcwd(),
+            "app_directory": os.path.dirname(__file__),
+            "base_directory": base_dir,
+            "template_folder": app.template_folder,
+            "template_folder_exists": os.path.exists(app.template_folder),
+            "login_template_path": os.path.join(app.template_folder, 'auth', 'login.html'),
+            "login_template_exists": os.path.exists(os.path.join(app.template_folder, 'auth', 'login.html')),
+            "template_folder_contents": os.listdir(app.template_folder) if os.path.exists(app.template_folder) else "Template folder not found"
+        }
+        return jsonify(paths)
+
+    # Add test route
     @app.route('/test')
     def test():
         return jsonify({"status": "success", "message": "App is working!"})

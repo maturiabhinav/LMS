@@ -6,8 +6,7 @@ from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static")
 
-
-@auth_bp.route("/auth/login", methods=["GET", "POST"])
+@auth_bp.route("/login", methods=["GET", "POST"])  # Remove "/auth" prefix here
 def login():
     if request.method == "POST":
         email = request.form.get("email")
@@ -35,14 +34,12 @@ def login():
 
     return render_template("auth/login.html")
 
-
-@auth_bp.route("/auth/logout")
+@auth_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
     flash("Logged out successfully", "info")
     return redirect(url_for("auth.login"))
-
 
 # flask-login user loader
 @login_manager.user_loader

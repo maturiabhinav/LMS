@@ -21,15 +21,15 @@ def create_app():
     app.register_blueprint(superadmin_bp, url_prefix="")
     app.register_blueprint(admin_bp, url_prefix="")
 
-    # Add root route redirect
-    @app.route('/')
-    def home():
-        return redirect(url_for('auth.login'))
-
-    # Add a test route to verify the app is working
+    # Add debug route
     @app.route('/test')
     def test():
         return jsonify({"status": "success", "message": "App is working!"})
+
+    # Add root route
+    @app.route('/')
+    def home():
+        return redirect(url_for('auth.login'))
 
     # Tenant loader before each request
     app.before_request(load_tenant)

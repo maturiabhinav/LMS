@@ -13,10 +13,11 @@ class Config:
         
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Domain settings
+    # Domain settings - don't set SERVER_NAME for production
     BASE_DOMAIN = os.getenv("BASE_DOMAIN", "localhost")
     SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN")
-    SERVER_NAME = os.getenv("SERVER_NAME", "localhost:5000")
+    # Remove SERVER_NAME or make it conditional
+    SERVER_NAME = os.getenv("SERVER_NAME")  # This can be None
     SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False").lower() in ("1","true","yes")
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"

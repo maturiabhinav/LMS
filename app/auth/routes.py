@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static")
 
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -30,11 +31,13 @@ def login():
             if getattr(g, "tenant", None) and user.tenant_id != g.tenant.id:
                 flash("Invalid tenant access", "danger")
                 return redirect(url_for("auth.login"))
-            # If no tenant context (root login), client admins/students can't login here
+            # If no tenant context (root login), allow login but redirect
             elif not getattr(g, "tenant", None):
-                flash("Please access your center through its specific URL", "danger")
-                return redirect(url_for("auth.login"))
+                login_user(user)
+                flash("Logged in successfully", "success")
+                return redirect(url_for("admin.dashboard"))
 
+        # For super admin or valid tenant clients
         login_user(user)
         flash("Logged in successfully", "success")
 

@@ -6,22 +6,34 @@ from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth", __name__, template_folder="templates", static_folder="static")
 
-@auth_bp.route("/login", methods=["GET", "POST"])  # Remove "/auth" prefix here
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # If tenant context, restrict search to tenant users (client admins / students)
-        if getattr(g, "tenant", None):
-            user = User.query.filter_by(email=email, tenant_id=g.tenant.id).first()
-        else:
-            # root context: allow SUPER_ADMIN login (tenant_id NULL)
-            user = User.query.filter_by(email=email, tenant_id=None).first()
+        # First, find the user by email (regardless of tenant)
+        user = User.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
             flash("Invalid credentials", "danger")
             return redirect(url_for("auth.login"))
+
+        # Check if user is active
+        if not user.is_active:
+            flash("Account is deactivated", "danger")
+            return redirect(url_for("auth.login"))
+
+        # For client admins/students, verify they're accessing from correct tenant context
+        if user.role != RoleEnum.SUPER_ADMIN:
+            # If there's a tenant context, verify the user belongs to this tenant
+            if getattr(g, "tenant", None) and user.tenant_id != g.tenant.id:
+                flash("Invalid tenant access", "danger")
+                return redirect(url_for("auth.login"))
+            # If no tenant context (root login), client admins/students can't login here
+            elif not getattr(g, "tenant", None):
+                flash("Please access your center through its specific URL", "danger")
+                return redirect(url_for("auth.login"))
 
         login_user(user)
         flash("Logged in successfully", "success")

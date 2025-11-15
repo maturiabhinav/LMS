@@ -13,14 +13,29 @@ app = create_app()
 with app.app_context():
     email = os.getenv("SUPERADMIN_EMAIL")
     password = os.getenv("SUPERADMIN_PASSWORD")
+    
     if not email or not password:
-        raise RuntimeError("Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD as env vars")
+        print("Warning: SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD not set")
+        sys.exit(1)
+    
+    # Check if super admin already exists
     existing = User.query.filter_by(email=email, role=RoleEnum.SUPER_ADMIN).first()
     if existing:
         print("Super admin already exists:", email)
+        # Update password if it's different
+        if not existing.check_password(password):
+            existing.set_password(password)
+            db.session.commit()
+            print("Super admin password updated")
     else:
         admin = User(email=email, full_name="Super Admin", role=RoleEnum.SUPER_ADMIN)
         admin.set_password(password)
         db.session.add(admin)
         db.session.commit()
         print("Created super admin:", email)
+    
+    # Print all users for debugging
+    print("Current users in database:")
+    users = User.query.all()
+    for user in users:
+        print(f"- {user.email} (Role: {user.role.value}, Tenant: {user.tenant_id})")

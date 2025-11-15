@@ -42,7 +42,40 @@ def create_app():
             "template_folder_contents": os.listdir(app.template_folder) if os.path.exists(app.template_folder) else "Template folder not found"
         }
         return jsonify(paths)
-
+    
+    @app.route('/debug-users')
+    def debug_users():
+        from .models import User, Tenant
+        import json
+    
+        users = User.query.all()
+        tenants = Tenant.query.all()
+    
+        user_data = []
+        for user in users:
+            user_data.append({
+                'id': user.id,
+                'email': user.email,
+                'role': user.role.value,
+                'tenant_id': user.tenant_id,
+                'has_password': bool(user.password_hash),
+                'is_active': user.is_active
+            })
+    
+        tenant_data = []
+        for tenant in tenants:
+            tenant_data.append({
+                'id': tenant.id,
+                'name': tenant.name,
+                'subdomain': tenant.subdomain
+            })
+    
+        return jsonify({
+            'users': user_data,
+            'tenants': tenant_data
+        })
+    
+    
     # Add test route
     @app.route('/test')
     def test():

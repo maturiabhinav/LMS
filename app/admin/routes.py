@@ -13,12 +13,8 @@ def require_client_admin(fn):
     def wrapped(*args, **kwargs):
         if not current_user.is_authenticated:
             return redirect(url_for("auth.login"))
-        # Allow super-admin to view admin content
-        if current_user.role == RoleEnum.SUPER_ADMIN:
-            return fn(*args, **kwargs)
-        if not g.tenant or current_user.tenant_id != g.tenant.id:
-            abort(403)
-        if current_user.role != RoleEnum.CLIENT_ADMIN:
+        # Allow client admins and super admins
+        if current_user.role not in (RoleEnum.CLIENT_ADMIN, RoleEnum.SUPER_ADMIN):
             abort(403)
         return fn(*args, **kwargs)
     return wrapped

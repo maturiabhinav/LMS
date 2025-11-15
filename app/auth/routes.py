@@ -27,11 +27,11 @@ def login():
         login_user(user)
         flash("Logged in successfully", "success")
 
-        # Redirect based on role
+        # Redirect based on role - SIMPLIFIED
         if user.role == RoleEnum.SUPER_ADMIN:
             return redirect(url_for("superadmin.index"))
         else:
-            # Client admin - redirect to their dashboard
+            # For client admins, redirect to their dashboard
             return redirect(url_for("admin.dashboard"))
 
     return render_template("auth/login.html")

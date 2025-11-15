@@ -5,17 +5,17 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY") or "dev-secret-key"
     
-    # Database configuration - handle both build and runtime
+    # FORCE PostgreSQL - Render always provides DATABASE_URL
     DATABASE_URL = os.getenv("DATABASE_URL")
-    if DATABASE_URL:
-        # Convert postgres:// to postgresql:// for SQLAlchemy
-        if DATABASE_URL.startswith("postgres://"):
-            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-        SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    else:
-        # Fallback for build process - use a dummy URL
-        SQLALCHEMY_DATABASE_URI = "sqlite:///temp.db"
-        
+    
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL environment variable is required")
+    
+    # Convert postgres:// to postgresql:// for SQLAlchemy
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Domain settings

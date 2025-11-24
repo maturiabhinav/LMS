@@ -19,13 +19,6 @@ def require_client_admin(fn):
         return fn(*args, **kwargs)
     return wrapped
 
-def generate_student_id():
-    """Generate unique student ID"""
-    while True:
-        student_id = 'STU' + ''.join(random.choices(string.digits, k=6))
-        if not Student.query.filter_by(student_id=student_id).first():
-            return student_id
-
 @admin_bp.route("/admin/dashboard")
 @login_required
 @require_client_admin

@@ -47,7 +47,6 @@ def create_app():
     
     @app.route('/debug-db-info')
     def debug_db_info():
-        import os
         from sqlalchemy import text
     
         info = {
@@ -114,8 +113,6 @@ def create_app():
     @app.route('/create-superadmin')
     def create_superadmin():
         from .models import User, RoleEnum
-        from .extensions import db
-        import os
         
         email = os.getenv("SUPERADMIN_EMAIL")
         password = os.getenv("SUPERADMIN_PASSWORD")
@@ -189,7 +186,6 @@ def create_app():
             
             # Auto-create super admin if not exists
             from .models import User, RoleEnum
-            import os
             
             email = os.getenv("SUPERADMIN_EMAIL")
             password = os.getenv("SUPERADMIN_PASSWORD")

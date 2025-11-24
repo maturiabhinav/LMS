@@ -5,17 +5,21 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY") or "dev-secret-key"
     
-    # FORCE PostgreSQL - Render always provides DATABASE_URL
+    # Database configuration
     DATABASE_URL = os.getenv("DATABASE_URL")
     
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL environment variable is required")
+    if DATABASE_URL:
+        # For psycopg3, the URL format is different
+        if DATABASE_URL.startswith("postgres://"):
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+        elif DATABASE_URL.startswith("postgresql://"):
+            DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+        
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    else:
+        # Fallback for development
+        SQLALCHEMY_DATABASE_URI = "sqlite:///app.db"
     
-    # Convert postgres:// to postgresql:// for SQLAlchemy
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    
-    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Domain settings

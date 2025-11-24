@@ -32,7 +32,7 @@ def generate_student_id():
 def dashboard():
     tenant = g.tenant or current_user.tenant
     total_students = Student.query.filter_by(tenant_id=tenant.id).count()
-    recent_students = Student.query.filter_by(tenant_id=tenant.id).order_by(Student.enrollment_date.desc()).limit(5).all()
+    recent_students = Student.query.filter_by(tenant_id=tenant.id).order_by(Student.registration_date.desc()).limit(5).all()
     
     return render_template("admin/dashboard.html", 
                          tenant=tenant,
@@ -44,7 +44,7 @@ def dashboard():
 @require_client_admin
 def students():
     tenant = g.tenant or current_user.tenant
-    students_list = Student.query.filter_by(tenant_id=tenant.id).order_by(Student.enrollment_date.desc()).all()
+    students_list = Student.query.filter_by(tenant_id=tenant.id).order_by(Student.registration_date.desc()).all()
     return render_template("admin/students.html", students=students_list, tenant=tenant)
 
 @admin_bp.route("/admin/create-student", methods=["GET", "POST"])

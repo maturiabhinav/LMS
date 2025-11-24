@@ -1,11 +1,11 @@
-from flask import Flask, redirect, url_for, jsonify
+from flask import Flask, redirect, url_for, jsonify, current_app
 import os
 from config import Config
-from .extensions import db, migrate, login_manager
-from .middleware import load_tenant
-from .auth.routes import auth_bp
-from .superadmin.routes import superadmin_bp
-from .admin.routes import admin_bp
+from app.extensions import db, migrate, login_manager
+from app.middleware import load_tenant
+from app.auth.routes import auth_bp
+from app.superadmin.routes import superadmin_bp
+from app.admin.routes import admin_bp
 
 def create_app():
     # Get the directory where this __init__.py file is located
@@ -28,7 +28,9 @@ def create_app():
     app.register_blueprint(superadmin_bp, url_prefix="")
     app.register_blueprint(admin_bp, url_prefix="")
 
-    # Add debug route to check template paths
+
+    # DEBUG ROUTES
+
     @app.route('/debug-templates')
     def debug_templates():
         paths = {
@@ -70,41 +72,47 @@ def create_app():
     @app.route('/debug-users')
     def debug_users():
         from .models import User, Tenant
-        import json
     
         users = User.query.all()
         tenants = Tenant.query.all()
     
-        user_data = []
-        for user in users:
-            user_data.append({
-                'id': user.id,
-                'email': user.email,
-                'role': user.role.value,
-                'tenant_id': user.tenant_id,
-                'has_password': bool(user.password_hash),
-                'is_active': user.is_active
-            })
+        user_data = [{
+            'id': user.id,
+            'email': user.email,
+            'role': user.role.value,
+            'tenant_id': user.tenant_id,
+            'has_password': bool(user.password_hash),
+            'is_active': user.is_active
+        } for user in users]
     
-        tenant_data = []
-        for tenant in tenants:
-            tenant_data.append({
-                'id': tenant.id,
-                'name': tenant.name,
-                'subdomain': tenant.subdomain
-            })
+        tenant_data = [{
+            'id': tenant.id,
+            'name': tenant.name,
+            'subdomain': tenant.subdomain
+        } for tenant in tenants]
     
         return jsonify({
             'users': user_data,
             'tenants': tenant_data
         })
-    
+
+    @app.route('/debug-db')
+    def debug_db():
+        from .models import User, Tenant
+        from sqlalchemy import inspect
+        
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        return {
+            'tables': tables,
+            'database_url': app.config['SQLALCHEMY_DATABASE_URI'],
+            'has_users_table': 'users' in tables,
+            'has_tenants_table': 'tenants' in tables
+        }
+
     @app.route('/debug-template-paths')
     def debug_template_paths():
-        import os
-        from flask import current_app
-    
-        # Get all possible template paths
         current_file_dir = os.path.dirname(os.path.abspath(__file__))
         template_dir_from_init = os.path.join(current_file_dir, 'templates')
     
@@ -114,44 +122,48 @@ def create_app():
             'flask_template_folder': current_app.template_folder,
             'flask_template_folder_absolute': os.path.abspath(current_app.template_folder),
             'calculated_template_dir': template_dir_from_init,
-        
-            # Check specific template paths
             'client_detail_relative_path': 'super_admin/client_detail.html',
             'client_detail_absolute_path_flask': os.path.join(current_app.template_folder, 'super_admin', 'client_detail.html'),
             'client_detail_absolute_path_calculated': os.path.join(template_dir_from_init, 'super_admin', 'client_detail.html'),
-        
-            # Check if paths exist
             'flask_template_folder_exists': os.path.exists(current_app.template_folder),
             'calculated_template_dir_exists': os.path.exists(template_dir_from_init),
             'client_detail_exists_flask': os.path.exists(os.path.join(current_app.template_folder, 'super_admin', 'client_detail.html')),
             'client_detail_exists_calculated': os.path.exists(os.path.join(template_dir_from_init, 'super_admin', 'client_detail.html')),
         }
     
-        # List contents if directories exist
         if os.path.exists(current_app.template_folder):
             info['flask_template_contents'] = os.listdir(current_app.template_folder)
-            if os.path.exists(os.path.join(current_app.template_folder, 'super_admin')):
-                info['super_admin_contents_flask'] = os.listdir(os.path.join(current_app.template_folder, 'super_admin'))
+            sa_path = os.path.join(current_app.template_folder, 'super_admin')
+            if os.path.exists(sa_path):
+                info['super_admin_contents_flask'] = os.listdir(sa_path)
     
         if os.path.exists(template_dir_from_init):
             info['calculated_template_contents'] = os.listdir(template_dir_from_init)
-            if os.path.exists(os.path.join(template_dir_from_init, 'super_admin')):
-                info['super_admin_contents_calculated'] = os.listdir(os.path.join(template_dir_from_init, 'super_admin'))
+            sa2_path = os.path.join(template_dir_from_init, 'super_admin')
+            if os.path.exists(sa2_path):
+                info['super_admin_contents_calculated'] = os.listdir(sa2_path)
     
         return jsonify(info)
 
-    # Add test route
     @app.route('/test')
     def test():
         return jsonify({"status": "success", "message": "App is working!"})
 
-    # Add root route
     @app.route('/')
     def home():
         return redirect(url_for('auth.login'))
 
     # Tenant loader before each request
     app.before_request(load_tenant)
+
+    # CREATE TABLES ON FIRST REQUEST (NEW)
+    @app.before_first_request
+    def create_tables():
+        try:
+            db.create_all()
+            print("Database tables created successfully")
+        except Exception as e:
+            print(f"Error creating tables: {e}")
 
     # Import models for migrations context
     with app.app_context():

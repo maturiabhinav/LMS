@@ -111,6 +111,31 @@ def create_app():
             'has_tenants_table': 'tenants' in tables
         }
 
+    @app.route('/create-superadmin')
+    def create_superadmin():
+        from .models import User, RoleEnum
+        from .extensions import db
+        import os
+        
+        email = os.getenv("SUPERADMIN_EMAIL")
+        password = os.getenv("SUPERADMIN_PASSWORD")
+        
+        if not email or not password:
+            return "SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD environment variables not set"
+        
+        # Check if super admin already exists
+        existing = User.query.filter_by(email=email, role=RoleEnum.SUPER_ADMIN).first()
+        if existing:
+            return f"Super admin already exists: {email}"
+        
+        # Create super admin
+        admin = User(email=email, full_name="Super Admin", role=RoleEnum.SUPER_ADMIN)
+        admin.set_password(password)
+        db.session.add(admin)
+        db.session.commit()
+        
+        return f"Super admin created successfully: {email}"
+        
     @app.route('/debug-template-paths')
     def debug_template_paths():
         current_file_dir = os.path.dirname(os.path.abspath(__file__))
@@ -159,11 +184,27 @@ def create_app():
     # Import models for migrations context
     with app.app_context():
         try:
-            # Try to create tables if they don't exist
-            from .models import User
-            # This will trigger table creation if needed
             db.create_all()
             print("Database tables checked/created")
+            
+            # Auto-create super admin if not exists
+            from .models import User, RoleEnum
+            import os
+            
+            email = os.getenv("SUPERADMIN_EMAIL")
+            password = os.getenv("SUPERADMIN_PASSWORD")
+            
+            if email and password:
+                existing = User.query.filter_by(email=email, role=RoleEnum.SUPER_ADMIN).first()
+                if not existing:
+                    admin = User(email=email, full_name="Super Admin", role=RoleEnum.SUPER_ADMIN)
+                    admin.set_password(password)
+                    db.session.add(admin)
+                    db.session.commit()
+                    print(f"Super admin created: {email}")
+                else:
+                    print(f"Super admin already exists: {email}")
+                    
         except Exception as e:
             print(f"Database initialization: {e}")
 

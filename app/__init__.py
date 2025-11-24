@@ -156,15 +156,6 @@ def create_app():
     # Tenant loader before each request
     app.before_request(load_tenant)
 
-    # CREATE TABLES ON FIRST REQUEST (NEW)
-    @app.before_first_request
-    def create_tables():
-        try:
-            db.create_all()
-            print("Database tables created successfully")
-        except Exception as e:
-            print(f"Error creating tables: {e}")
-
     # Import models for migrations context
     with app.app_context():
         try:
@@ -175,7 +166,7 @@ def create_app():
             print("Database tables checked/created")
         except Exception as e:
             print(f"Database initialization: {e}")
-            
+
     with app.app_context():
         from . import models
 

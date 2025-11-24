@@ -10,6 +10,15 @@ from app.admin.routes import admin_bp
 def create_app():
     # Get the directory where this __init__.py file is located
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    template_dir = os.path.join(base_dir, 'templates')
+    static_dir = os.path.join(base_dir, 'static')
+
+    print(f"Template directory: {template_dir}")
+    print(f"Template directory exists: {os.path.exists(template_dir)}")
+    
+    if os.path.exists(template_dir):
+        print(f"Template contents: {os.listdir(template_dir)}")
+    
     
     app = Flask(__name__, 
                 template_folder=os.path.join(base_dir, 'templates'), 

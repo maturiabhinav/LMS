@@ -167,6 +167,16 @@ def create_app():
 
     # Import models for migrations context
     with app.app_context():
+        try:
+            # Try to create tables if they don't exist
+            from .models import User
+            # This will trigger table creation if needed
+            db.create_all()
+            print("Database tables checked/created")
+        except Exception as e:
+            print(f"Database initialization: {e}")
+            
+    with app.app_context():
         from . import models
 
     return app

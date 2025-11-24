@@ -49,19 +49,28 @@ def create_student():
         full_name = request.form.get("full_name")
         email = request.form.get("email")
         phone = request.form.get("phone")
-        course_enrolled = request.form.get("course_enrolled")
+        department = request.form.get("department")
+        year_of_study = request.form.get("year_of_study")
+        password = request.form.get("password")
         
+        # Check if email already exists
+        if Student.query.filter_by(email=email).first():
+            flash("Student with this email already exists", "danger")
+            return redirect(url_for("admin.create_student"))
+        
+        # Create student - using the field that exists in your database
         student = Student(
-            student_id=generate_student_id(),
             full_name=full_name,
             email=email,
+            password=password,  # Use 'password' if that's what's in your database
             phone=phone,
-            course_enrolled=course_enrolled,
+            department=department,
+            year_of_study=year_of_study,
             tenant_id=tenant.id
         )
         db.session.add(student)
         db.session.commit()
-        flash(f"Student '{full_name}' created successfully with ID: {student.student_id}", "success")
+        flash(f"Student '{full_name}' created successfully", "success")
         return redirect(url_for("admin.students"))
     
     return render_template("admin/create_student.html", tenant=tenant)

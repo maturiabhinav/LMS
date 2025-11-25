@@ -142,6 +142,31 @@ def create_app():
         
         return f"Super admin created successfully: {email}"
         
+    @app.route('/debug-all-students')
+    def debug_all_students():
+        from .models import Student, Tenant
+        try:
+            students = Student.query.all()
+            student_data = []
+            for student in students:
+                student_data.append({
+                    'id': student.id,
+                    'email': student.email,
+                    'password': student.password,  # This will show the actual stored password
+                    'full_name': student.full_name,
+                    'tenant_id': student.tenant_id,
+                    'tenant_name': student.tenant.name if student.tenant else 'No tenant',
+                    'registration_date': student.registration_date.isoformat() if student.registration_date else 'No date'
+                })
+            
+            return jsonify({
+                'total_students': len(student_data),
+                'students': student_data,
+                'status': 'success'
+            })
+        except Exception as e:
+            return jsonify({'error': str(e), 'status': 'error'})
+    
     @app.route('/debug-template-paths')
     def debug_template_paths():
         current_file_dir = os.path.dirname(os.path.abspath(__file__))

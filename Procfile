@@ -1,1 +1,0 @@
-web: flask db upgrade && python scripts/seed_superadmin.py && gunicorn wsgi:app
